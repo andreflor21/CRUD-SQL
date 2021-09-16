@@ -1,12 +1,14 @@
 from flask import Flask
-from .controllers.create_db import create_db, create_table
-
+from .services.create_db import create_db, create_table
+from .services.routes import bp_animes
 create_db()
 create_table()
 
-app = Flask(__name__)
+def create_app():
 
+	app = Flask(__name__)
 
-@app.route('/')
-def index():
-	return "Hello World"
+	app.register_blueprint(bp_animes)
+
+	return app
+
