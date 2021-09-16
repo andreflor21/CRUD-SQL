@@ -2,7 +2,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from dotenv import load_dotenv
 import os
-from ..configs import configs
+from app.configs.configs import configs
 load_dotenv()
 
 
