@@ -2,14 +2,9 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from dotenv import load_dotenv
 import os
-
+from ..configs import configs
 load_dotenv()
-configs = {
-    "host": os.environ.get('DB_HOST'),
-    "database": os.environ.get('DB_NAME'),
-    "user": os.environ.get('DB_USER'),
-    "password": os.environ.get('DB_PWD')
-}
+
 
 def create_db():
     conn = psycopg2.connect(user=configs['user'], password=configs['password'])
