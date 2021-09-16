@@ -1,17 +1,26 @@
+from flask.json import jsonify
+from app.configs.exceptions import AnimeNotFound, InvalidKeysError
 import psycopg2
 from psycopg2 import sql
-from ..configs import configs
+from app.configs.configs import configs
 from typing import Union
 
 
 class Anime():
+    available_keys = ['anime', 'released_date', 'seasons']
     def __init__(self, data: Union[tuple, dict]) -> None:
 
         if type(data) is tuple:
-            self.id, self.anime, self.released_date, self.seasons = data
+            self.id, anime,released_date, self.seasons = data
+            self.anime = anime.title()
+            self.released_date = released_date.isoformat()
+
         elif type(data) is dict:
-            for k, v in data:
-                setattr(self, k, v)
+            for k, v in data.items():
+                if k in self.available_keys:
+                    setattr(self, k, v)
+                else:
+                    raise InvalidKeysError(**data)
 
     def create_anime(self):
         conn = psycopg2.connect(**configs)
@@ -74,6 +83,9 @@ class Anime():
         conn.commit()
         cur.close()
         conn.close()
+        
+        if not result:
+            raise AnimeNotFound
 
         serialized_result = Anime(result).__dict__
 
@@ -94,7 +106,7 @@ class Anime():
         conn.close()
 
         if not result:
-            raise IndexError
+            raise AnimeNotFound
 
         serialized_result = Anime(result).__dict__
 
@@ -102,11 +114,18 @@ class Anime():
     
     @staticmethod
     def update_anime(id, data):
+        available_keys = ['anime', 'released_date', 'seasons']
         conn = psycopg2.connect(**configs)
         cur = conn.cursor()
 
-        columns = [sql.Identifier(key) for key in data.keys()]
-        values = [sql.Literal(value) for value in data.values()]
+        for k, v in data.items():
+            if k in available_keys:
+
+                columns = [sql.Identifier(k) for k in data.keys()]
+                values = [sql.Literal(v) for v in data.values()]
+
+            else:
+                raise InvalidKeysError(**data)
 
         query = sql.SQL(
              """
@@ -130,7 +149,7 @@ class Anime():
         conn.close()
 
         if not result:
-            raise IndexError
+            raise AnimeNotFound
 
         serialized_data = Anime(result).__dict__
 
