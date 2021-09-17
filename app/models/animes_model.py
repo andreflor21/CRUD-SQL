@@ -71,12 +71,12 @@ class Anime():
         return serialized_result 
     
     @staticmethod
-    def get_one_anime(id):
+    def get_one_anime(anime_id):
         conn = psycopg2.connect(**configs)
         cur = conn.cursor()
 
 
-        cur.execute('SELECT * FROM animes WHERE id=(%s);', (id, ))
+        cur.execute('SELECT * FROM animes WHERE id=(%s);', (anime_id, ))
 
         result = cur.fetchone()
 
@@ -85,19 +85,19 @@ class Anime():
         conn.close()
         
         if not result:
-            raise AnimeNotFound
+            raise AnimeNotFound(anime_id)
 
         serialized_result = Anime(result).__dict__
 
         return serialized_result
 
     @staticmethod
-    def delete_anime(id):
+    def delete_anime(anime_id):
         conn = psycopg2.connect(**configs)
         cur = conn.cursor()
 
 
-        cur.execute('DELETE FROM animes WHERE id=(%s) RETURNING *;', (id, ))
+        cur.execute('DELETE FROM animes WHERE id=(%s) RETURNING *;', (anime_id, ))
 
         result = cur.fetchone()
 
@@ -106,14 +106,14 @@ class Anime():
         conn.close()
 
         if not result:
-            raise AnimeNotFound
+            raise AnimeNotFound(anime_id)
 
         serialized_result = Anime(result).__dict__
 
         return serialized_result
     
     @staticmethod
-    def update_anime(id, data):
+    def update_anime(anime_id, data):
         available_keys = ['anime', 'released_date', 'seasons']
         conn = psycopg2.connect(**configs)
         cur = conn.cursor()
@@ -134,9 +134,9 @@ class Anime():
                 SET    
                     ({columns}) = row({values})
                 WHERE
-                    id={id}
+                    id={anime_id}
                 RETURNING *
-             """).format(id=sql.Literal(str(id)),
+             """).format(id=sql.Literal(str(anime_id)),
                         columns=sql.SQL(',').join(columns),
                         values=sql.SQL(',').join(values))
 
@@ -149,7 +149,7 @@ class Anime():
         conn.close()
 
         if not result:
-            raise AnimeNotFound
+            raise AnimeNotFound(anime_id)
 
         serialized_data = Anime(result).__dict__
 
