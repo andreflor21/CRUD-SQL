@@ -113,7 +113,7 @@ class Anime():
         return serialized_result
     
     @staticmethod
-    def update_anime(anime_id, data):
+    def update_anime(id, data):
         available_keys = ['anime', 'released_date', 'seasons']
         conn = psycopg2.connect(**configs)
         cur = conn.cursor()
@@ -134,9 +134,9 @@ class Anime():
                 SET    
                     ({columns}) = row({values})
                 WHERE
-                    id={anime_id}
+                    id={id}
                 RETURNING *
-             """).format(id=sql.Literal(str(anime_id)),
+             """).format(id=sql.Literal(str(id)),
                         columns=sql.SQL(',').join(columns),
                         values=sql.SQL(',').join(values))
 
@@ -149,7 +149,7 @@ class Anime():
         conn.close()
 
         if not result:
-            raise AnimeNotFound(anime_id)
+            raise AnimeNotFound(id)
 
         serialized_data = Anime(result).__dict__
 
